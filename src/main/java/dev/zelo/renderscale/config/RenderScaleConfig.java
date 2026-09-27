@@ -23,7 +23,30 @@ public class RenderScaleConfig implements ConfigData {
     public boolean fsr = false;
 
     @ConfigEntry.Gui.Tooltip()
+    public boolean fsrcnnx = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    public boolean miniespcn = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    public boolean miniespcnq = false;
+
+    @ConfigEntry.Gui.Tooltip()
     public boolean temporal = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    public boolean fsr2 = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @ConfigEntry.BoundedDiscrete(max = 100, min = 0)
+    public int fsr2Sharpness = 80;
+
+    @ConfigEntry.Gui.Tooltip()
+    @ConfigEntry.BoundedDiscrete(max = 100, min = 0)
+    public int fsr2Reactive = 50;
+
+    @ConfigEntry.Gui.Tooltip()
+    public boolean fsr2NoHistory = false;
 
     @ConfigEntry.Gui.Tooltip()
     public boolean temporalWithShaders = false;
@@ -56,6 +79,16 @@ public class RenderScaleConfig implements ConfigData {
     /** RCAS attenuation 0 (sharpest) .. 1 (softest). Slider is intuitive: higher = sharper. */
     public float getRcasAttenuation() {
         return (100 - Math.clamp(fsrSharpness, 0, 100)) / 100.0f;
+    }
+
+    /** Same mapping for the FSR2 final RCAS pass. */
+    public float getFsr2RcasAttenuation() {
+        return (100 - Math.clamp(fsr2Sharpness, 0, 100)) / 100.0f;
+    }
+
+    /** Reactive strength 0 (off) .. 1 (drop history fast on emissive/flicker pixels). */
+    public float getFsr2ReactiveStrength() {
+        return Math.clamp(fsr2Reactive, 0, 100) / 100.0f;
     }
     //?}
 
@@ -128,7 +161,7 @@ public class RenderScaleConfig implements ConfigData {
     // true -> linear, false -> nearest
     public boolean getFilter() {
         //? >= 1.21.11 {
-        return fsr || temporal || forceLinear || getScale() > 1.0;
+        return fsr || fsr2 || fsrcnnx || miniespcn || miniespcnq || temporal || forceLinear || getScale() > 1.0;
         //?} else
         //return forceLinear || getScale() > 1.0;
     }

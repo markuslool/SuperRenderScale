@@ -8,6 +8,7 @@
 uniform sampler2D InSampler;      // current frame (EASU base or scaled target)
 uniform sampler2D HistorySampler; // previous high-res output
 uniform sampler2D DepthSampler;   // current depth (same size as InSampler source)
+uniform sampler2D HistoryDepthSampler; // previous depth, packed RG (NEAREST)
 
 // Must match RenderPipeline.withUniform("Reproj", UNIFORM_BUFFER).
 // Per-pixel camera motion (FSR2-style); x=1 enables, 0 = jitter fallback.
@@ -41,13 +42,26 @@ void main() {
     // then ReprojFlags.z = 0 forces the far plane, which is still EXACT for
     // pure rotation (distance-independent) and only approximates translation.
     vec2 historyUv;
+    float repDepth = 1.0;
     if (ReprojFlags.x > 0.5) {
-        float depth = ReprojFlags.z > 0.5 ? texture(DepthSampler, uv).r : 1.0;
+        float depth = 1.0;
+        if (ReprojFlags.z > 0.5) {
+            // 3x3 nearest-depth dilation in INPUT texel space: the foreground
+            // wins, so thin occluders (grass, fences) reproject with their own
+            // motion instead of the background's (kills edge halo).
+            vec2 depthSize = vec2(textureSize(DepthSampler, 0));
+            ivec2 dBase = ivec2(uv * depthSize);
+            ivec2 dLo = ivec2(depthSize) - ivec2(1);
+            for (int oy = -1; oy <= 1; ++oy)
+                for (int ox = -1; ox <= 1; ++ox)
+                    depth = min(depth, texelFetch(DepthSampler, clamp(dBase + ivec2(ox, oy), ivec2(0), dLo), 0).r);
+        }
         vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
         vec4 world = InvVP * ndc;
         world /= world.w;
         vec4 prev = PrevVP * world;
         prev /= prev.w;
+        repDepth = prev.z * 0.5 + 0.5;
         historyUv = prev.xy * 0.5 + 0.5;
     } else {
         historyUv = uv - juv;
@@ -96,6 +110,21 @@ void main() {
     // hence the high gain: camera-translation smear is handled by blendBase.
     float diff = clamp(length(hist - curr) * 2.5, 0.0, 1.0);
     float blend = mix(blendBase, 1.0, diff * diff);
+
+    // luma stability: flickering light (torches, lava) changes brightness with
+    // no motion; history would drag the old value along as a light-trail.
+    float lumaDiff = clamp(abs(dot(hist, vec3(0.2126, 0.7152, 0.0722)) - dot(curr, vec3(0.2126, 0.7152, 0.0722))) * 4.0, 0.0, 1.0);
+    blend = mix(blend, 1.0, lumaDiff * lumaDiff);
+
+    // disocclusion: reproject this pixel's depth into the previous frame and
+    // compare with the stored history depth (packed RG, ~16 bit). A different
+    // surface means the history texel is stale (uncovered background) -> drop.
+    // Needs real depth (ReprojFlags.z) and camera matrices (ReprojFlags.x).
+    if (ReprojFlags.x > 0.5 && ReprojFlags.z > 0.5) {
+        float histD = dot(texture(HistoryDepthSampler, historyUv).rg, vec2(1.0, 1.0 / 255.0));
+        float occThresh = 0.004 + repDepth * repDepth * 0.02;
+        blend = mix(blend, 1.0, step(occThresh, abs(histD - repDepth)));
+    }
 
     // reprojected outside the frame (fast turns, behind camera): no valid history
     vec2 oob = step(historyUv, vec2(-0.05)) + step(vec2(1.05), historyUv);

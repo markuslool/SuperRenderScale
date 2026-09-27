@@ -18,7 +18,7 @@ Press `O` or, use the mod menu config to control the render scale multiplier. Yo
 
 You can also force "linear" scale algorithm (similar to FXAA) in lower render scales if you want. It's best to leave it as OFF if you're using shaders since they usually have their own antialiasing.
 
-There is experimental support for FSR 1.0 upscaling on 1.21.11 and above! No plans to support DLSS or FSR 2.0+.
+There is experimental support for FSR 1.0 and FSR 2 (temporal, YCoCg + RCAS) upscaling on 1.21.11 and above! No plans to support DLSS.
 
 There are plans for Dynamic Resolution!
 

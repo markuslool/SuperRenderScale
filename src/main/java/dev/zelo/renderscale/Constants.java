@@ -9,6 +9,7 @@ public class Constants {
     public static final Logger LOG = LoggerFactory.getLogger(MOD_NAME);
 
     // Manual build tag: bump on every test build so screenshots/logs self-identify.
-    // b36 = manual perspective from setup params + shared jitter helper.
-    public static final String BUILD_TAG = "b36";
+    // b44 = MiniESPCN-Q x2 port (conv1 3-32 + conv2 32-16 k5 + conv3 shuffle,
+    // 13 core passes, no bicubic base), wins over MiniESPCN/FSRCNNX.
+    public static final String BUILD_TAG = "b44";
 }

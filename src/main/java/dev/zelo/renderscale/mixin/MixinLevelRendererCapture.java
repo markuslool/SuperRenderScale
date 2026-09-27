@@ -9,7 +9,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4fc;
-import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +18,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Captures the exact view/projection state used for the level each frame,
  * feeding depth-based reprojection (the core of FSR2-style temporal).
- * Public fields on {@code CameraRenderState} make this allocation-free.
+ * The projection comes from the real GPU upload (see
+ * MixinProjectionMatrixBuffer); the view arg is rotation-only, composed
+ * here with the camera position (view bobbing lives in the projection).
  */
 @Mixin(LevelRenderer.class)
 @MixinEnvironment(type = MixinEnvironment.Env.CLIENT)
@@ -30,12 +31,9 @@ public abstract class MixinLevelRendererCapture {
             GpuBufferSlice projectionMatrixBuffer, Vector4f fogColor, boolean panoramicMode,
             CallbackInfo ci) {
         RenderScale rs = RenderScale.getInstance();
-        if (rs == null || cameraState == null || cameraState.pos == null) return;
+        if (rs == null || cameraState == null) return;
         try {
-            // viewMatrix arg is rotation-only; the projection comes from
-            // Camera.projection inside capture (CameraRenderState's copy is stale).
-            rs.captureCameraMatrices(viewMatrix,
-                    cameraState.pos.x, cameraState.pos.y, cameraState.pos.z, renderBlockOutline);
+            rs.captureCameraMatrices(cameraState, viewMatrix);
         } catch (Exception ignored) {
         }
     }

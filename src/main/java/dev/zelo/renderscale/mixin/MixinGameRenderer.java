@@ -20,11 +20,18 @@ public abstract class MixinGameRenderer {
         rs.onFrameStart();
         rs.setShouldScale(true);
         //? >= 1.21.11 {
-        // Poll jitter once per frame so projection mixin + resolve pass share it
-        // (getProjectionMatrix is called several times per frame: main, culling, hand).
         try {
-            if (RenderScale.getInstance().isTemporalActive()) {
-                RenderScale.getInstance().pollTemporalJitter();
+            //? > 26.1 {
+            rs.beginReprojFrame();
+            //?}
+            if (rs.isTemporalActive()) {
+                //? > 26.1 {
+                // Jitter is advanced + baked in by MixinCameraExtract, matrices come
+                // from the real GPU upload: takeOver only tracks camera motion.
+                rs.pollCameraMotion();
+                //?} else {
+                /*rs.pollTemporalJitter();
+                *///?}
             }
         } catch (Exception ignored) {}
         //?}

@@ -16,7 +16,21 @@ public class RenderScaleSodiumConfig implements ConfigEntryPoint {
     //? >= 1.21.11
     private static final Identifier FSR = id("fsr");
     //? >= 1.21.11
+    private static final Identifier FSRCNNX = id("fsrcnnx");
+    //? >= 1.21.11
+    private static final Identifier MINIESPCN = id("miniespcn");
+    //? >= 1.21.11
+    private static final Identifier MINIESPCNQ = id("miniespcnq");
+    //? >= 1.21.11
     private static final Identifier TEMPORAL = id("temporal");
+    //? >= 1.21.11
+    private static final Identifier FSR2 = id("fsr2");
+    //? >= 1.21.11
+    private static final Identifier FSR2_SHARPNESS = id("fsr2_sharpness");
+    //? >= 1.21.11
+    private static final Identifier FSR2_REACTIVE = id("fsr2_reactive");
+    //? >= 1.21.11
+    private static final Identifier FSR2_NO_HISTORY = id("fsr2_no_history");
     //? >= 1.21.11
     private static final Identifier TEMPORAL_WITH_SHADERS = id("temporal_with_shaders");
     //? >= 1.21.11
@@ -126,13 +140,72 @@ public class RenderScaleSodiumConfig implements ConfigEntryPoint {
                                         .setDefaultValue(false)
                                         .setImpact(OptionImpact.MEDIUM)
                                 )
-                                .addOption(builder.createBooleanOption(TEMPORAL)
-                                        .setName(Component.translatable("text.autoconfig.renderscale.option.temporal"))
+                                .addOption(builder.createBooleanOption(FSRCNNX)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.fsrcnnx"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.fsrcnnx.@Tooltip.sodium"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().fsrcnnx = v, () -> config().fsrcnnx)
+                                        .setDefaultValue(false)
+                                        .setImpact(OptionImpact.HIGH)
+                                )
+                                .addOption(builder.createBooleanOption(MINIESPCN)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.miniespcn"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.miniespcn.@Tooltip.sodium"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().miniespcn = v, () -> config().miniespcn)
+                                        .setDefaultValue(false)
+                                        .setImpact(OptionImpact.HIGH)
+                                )
+                                .addOption(builder.createBooleanOption(MINIESPCNQ)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.miniespcnq"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.miniespcnq.@Tooltip.sodium"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().miniespcnq = v, () -> config().miniespcnq)
+                                        .setDefaultValue(false)
+                                        .setImpact(OptionImpact.HIGH)
+                                )
+                                .addOption(builder.createBooleanOption(TEMPORAL)                                        .setName(Component.translatable("text.autoconfig.renderscale.option.temporal"))
                                         .setTooltip(Component.translatable("text.autoconfig.renderscale.option.temporal.@Tooltip.sodium"))
                                         .setStorageHandler(this.storageHandler)
                                         .setBinding(v -> config().temporal = v, () -> config().temporal)
                                         .setDefaultValue(false)
                                         .setImpact(OptionImpact.MEDIUM)
+                                )
+                                .addOption(builder.createBooleanOption(FSR2)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.fsr2"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.fsr2.@Tooltip.sodium"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().fsr2 = v, () -> config().fsr2)
+                                        .setDefaultValue(false)
+                                        .setImpact(OptionImpact.MEDIUM)
+                                )
+                                .addOption(builder.createIntegerOption(FSR2_SHARPNESS)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.fsr2Sharpness"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.fsr2Sharpness.@Tooltip"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().fsr2Sharpness = v, () -> config().fsr2Sharpness)
+                                        .setDefaultValue(80)
+                                        .setRange(0, 100, 1)
+                                        .setValueFormatter(RenderScaleSodiumConfig::formatPercent)
+                                        .setImpact(OptionImpact.LOW)
+                                )
+                                .addOption(builder.createIntegerOption(FSR2_REACTIVE)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.fsr2Reactive"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.fsr2Reactive.@Tooltip"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().fsr2Reactive = v, () -> config().fsr2Reactive)
+                                        .setDefaultValue(50)
+                                        .setRange(0, 100, 1)
+                                        .setValueFormatter(RenderScaleSodiumConfig::formatPercent)
+                                        .setImpact(OptionImpact.LOW)
+                                )
+                                .addOption(builder.createBooleanOption(FSR2_NO_HISTORY)
+                                        .setName(Component.translatable("text.autoconfig.renderscale.option.fsr2NoHistory"))
+                                        .setTooltip(Component.translatable("text.autoconfig.renderscale.option.fsr2NoHistory.@Tooltip"))
+                                        .setStorageHandler(this.storageHandler)
+                                        .setBinding(v -> config().fsr2NoHistory = v, () -> config().fsr2NoHistory)
+                                        .setDefaultValue(false)
+                                        .setImpact(OptionImpact.LOW)
                                 )
                                 .addOption(builder.createBooleanOption(TEMPORAL_WITH_SHADERS)
                                         .setName(Component.translatable("text.autoconfig.renderscale.option.temporalWithShaders"))
